@@ -83,7 +83,9 @@ def dump_raw_pcode(func):
     opiter = listing.getInstructions(func_body, True)
     output = []
     output.append('#include "pcode.h"')
-    output.append("void {}(CPUState *state){{".format(func.getName()))
+    output.append(
+        "void {}(CPUState *state, size_t breakpoint){{".format(func.getName())
+    )
     output.append(
         "uint8_t* reg = state->reg; uint8_t* unique = state->unique; uint8_t* ram = state->ram;"
     )
@@ -92,7 +94,7 @@ def dump_raw_pcode(func):
     while opiter.hasNext():
         op = opiter.next()
         output.append("case 0x{}:".format(op.getAddress()))
-        output.append("// {}".format(op))
+        output.append('INSN(0x{},"{}")'.format(op.getAddress(), op))
         raw_pcode = op.getPcode()
         for entry in raw_pcode:
             output.append(pcode2c(entry))

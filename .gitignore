@@ -1,3 +1,5 @@
 *.o
 fact_proj
 *.vscode
+a.out
+.gdb_history
