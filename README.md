@@ -1,5 +1,7 @@
 # pcode2c
 
+WIP: Do not expect this to work for you yet.
+
 pcode2c is a Ghidra translator script from low pcode to C for the purposes of running the resulting code through off the shelf verifiers (for example [CBMC](https://github.com/diffblue/cbmc)). The resulting C has a direct mapping to the underlying assembly.
 
 C is a useful intermediate because it enables using powerful off the shelf verifiers and can be directly compared (with a little muscle grease) against decompilaton or source.
