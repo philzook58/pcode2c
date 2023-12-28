@@ -2,10 +2,13 @@
 #include <string.h>
 #include <stdint.h>
 #include <stdio.h>
+#include <assert.h>
+/*
 void assert(int x, ...)
 {
     return;
 }
+*/
 
 typedef struct CPUState
 {
@@ -28,29 +31,36 @@ void INT_ADD64(a1,a2,a3){
 
 */
 
-#define INSN(addr, insn)                          \
-    {                                             \
-        state->pc = addr;                         \
-        for (size_t r = 0; r <= 10; r++)          \
-        {                                         \
-            uint64_t temp;                        \
-            memcpy(&temp, state->reg + 8 * r, 8); \
-            printf("\tR%d: %ld\t", r, temp);      \
-        }                                         \
-        for (size_t r = 0x200; r <= 0x210; r++)   \
-        {                                         \
-            uint8_t temp;                         \
-            memcpy(&temp, state->reg + r, 1);     \
-            printf("\tFlag%02x: %ld\t", r, temp); \
-        }                                         \
-        printf("\n");                             \
-        if (breakpoint == addr)                   \
-        {                                         \
-            printf("BREAKPOINT 0x%llx\n", addr);  \
-            fflush(0);                            \
-            return;                               \
-        }                                         \
-        printf("0x%llx: %s\n", addr, insn);       \
+// Using macro rather than loop so not to pay unwinding cost in BMC
+#define PRINTREG(N)                           \
+    {                                         \
+        memcpy(&temp, state->reg + 8 * N, 8); \
+        printf("\tR" #N ": %ld\t", temp);     \
+    }
+
+#define INSN(addr, insn)                         \
+    {                                            \
+        state->pc = addr;                        \
+        uint64_t temp;                           \
+        PRINTREG(0);                             \
+        PRINTREG(1);                             \
+        PRINTREG(2);                             \
+        PRINTREG(3);                             \
+        PRINTREG(4);                             \
+        PRINTREG(5);                             \
+        PRINTREG(6);                             \
+        PRINTREG(7);                             \
+        PRINTREG(8);                             \
+        PRINTREG(9);                             \
+        PRINTREG(10);                            \
+        printf("\n");                            \
+        if (breakpoint == addr)                  \
+        {                                        \
+            printf("BREAKPOINT 0x%llx\n", addr); \
+            fflush(0);                           \
+            return;                              \
+        }                                        \
+        printf("0x%llx: %s\n", addr, insn);      \
     }
 
 void COPY(void *out_addr, size_t out_size, void *in_addr, size_t in_size)
@@ -191,7 +201,7 @@ BOOL_BINOP(BOOL_XOR, ^) // Hmm. Is using this XOR ok?
         }                                                                                                        \
         else                                                                                                     \
         {                                                                                                        \
-            assert(0, "unsupported integer operation");                                                          \
+            assert(out_size == 1 || out_size == 2 || out_size == 4 || out_size == 8);                            \
         }                                                                                                        \
     }
 
@@ -210,43 +220,44 @@ IBINOP(INT_RIGHT, >>)
     void name(void *out_addr, size_t out_size, void *in0_addr, size_t in0_size, void *in1_addr, size_t in1_size) \
     {                                                                                                            \
         printf(#name ": %p %ld %p %ld %p %ld\n", out_addr, out_size, in0_addr, in0_size, in1_addr, in1_size);    \
-        assert(out_size == in0_size && out_size == in1_size);                                                    \
+        assert(in0_size == in1_size);                                                                            \
+        assert(out_size == 1);                                                                                   \
         int8_t out;                                                                                              \
-        if (out_size == 1)                                                                                       \
+        if (in0_size == 1)                                                                                       \
         {                                                                                                        \
             sign##int8_t in0, in1;                                                                               \
-            memcpy(&in0, in0_addr, in0_size);                                                                    \
-            memcpy(&in1, in1_addr, in1_size);                                                                    \
+            memcpy(&in0, in0_addr, 1);                                                                           \
+            memcpy(&in1, in1_addr, 1);                                                                           \
             out = in0 op in1;                                                                                    \
-            memcpy(out_addr, &out, out_size);                                                                    \
+            memcpy(out_addr, &out, 1);                                                                           \
         }                                                                                                        \
-        else if (out_size == 2)                                                                                  \
+        else if (in0_size == 2)                                                                                  \
         {                                                                                                        \
             sign##int16_t in0, in1;                                                                              \
-            memcpy(&in0, in0_addr, in0_size);                                                                    \
-            memcpy(&in1, in1_addr, in1_size);                                                                    \
+            memcpy(&in0, in0_addr, 2);                                                                           \
+            memcpy(&in1, in1_addr, 2);                                                                           \
             out = in0 op in1;                                                                                    \
-            memcpy(out_addr, &out, out_size);                                                                    \
+            memcpy(out_addr, &out, 1);                                                                           \
         }                                                                                                        \
-        else if (out_size == 4)                                                                                  \
+        else if (in0_size == 4)                                                                                  \
         {                                                                                                        \
             sign##int32_t in0, in1;                                                                              \
-            memcpy(&in0, in0_addr, in0_size);                                                                    \
-            memcpy(&in1, in1_addr, in1_size);                                                                    \
+            memcpy(&in0, in0_addr, 4);                                                                           \
+            memcpy(&in1, in1_addr, 4);                                                                           \
             out = in0 op in1;                                                                                    \
-            memcpy(out_addr, &out, out_size);                                                                    \
+            memcpy(out_addr, &out, 1);                                                                           \
         }                                                                                                        \
-        else if (out_size == 8)                                                                                  \
+        else if (in0_size == 8)                                                                                  \
         {                                                                                                        \
             sign##int64_t in0, in1;                                                                              \
-            memcpy(&in0, in0_addr, in0_size);                                                                    \
-            memcpy(&in1, in1_addr, in1_size);                                                                    \
+            memcpy(&in0, in0_addr, 8);                                                                           \
+            memcpy(&in1, in1_addr, 8);                                                                           \
             out = in0 op in1;                                                                                    \
-            memcpy(out_addr, &out, out_size);                                                                    \
+            memcpy(out_addr, &out, 1);                                                                           \
         }                                                                                                        \
         else                                                                                                     \
         {                                                                                                        \
-            assert(0, "unsupported integer operation");                                                          \
+            assert(0);                                                                                           \
         }                                                                                                        \
     }
 
@@ -264,22 +275,27 @@ void INT_SBORROW(void *out_addr, size_t out_size, void *in1_addr, size_t in1_siz
     // memcpy(out_addr, &out, 1);
 }
 
-void INT_EQUAL(void *out_addr, size_t out_size, void *in1_addr, size_t in1_size, void *in2_addr, size_t in2_size)
+void INT_EQUAL(uint8_t *out_addr, size_t out_size, uint8_t *in1_addr, size_t in1_size, uint8_t *in2_addr, size_t in2_size)
 {
     printf("INT_EQUAL: %p %ld %p %ld %p %ld\n", out_addr, out_size, in1_addr, in1_size, in2_addr, in2_size);
     assert(in1_size == in2_size);
-    uint8_t out = memcmp(in1_addr, in2_addr, in1_size);
-    out = out == 0 ? 1 : 0;
+    assert(in1_size <= 8);
+    uint8_t out;
+    // We could use memcmp, but I don't want to pay the unwinding cost.
+    // uint8_t out = memcmp(in1_addr, in2_addr, in1_size);
+    // out = out == 0 ? 1 : 0;
+    out = in1_addr[0] == in2_addr[0] && in1_addr[1] == in2_addr[1] && in1_addr[2] == in2_addr[2] && in1_addr[3] == in2_addr[3] && in1_addr[4] == in2_addr[4] && in1_addr[5] == in2_addr[5] && in1_addr[6] == in2_addr[6] && in1_addr[7] == in2_addr[7] ? 1 : 0;
     memcpy(out_addr, &out, 1);
 }
 
-void INT_NOTEQUAL(void *out_addr, size_t out_size, void *in1_addr, size_t in1_size, void *in2_addr, size_t in2_size)
+void INT_NOTEQUAL(uint8_t *out_addr, size_t out_size, uint8_t *in1_addr, size_t in1_size, uint8_t *in2_addr, size_t in2_size)
 {
 
     printf("INT_NOTEQUAL: %p %ld %p %ld %p %ld\n", out_addr, out_size, in1_addr, in1_size, in2_addr, in2_size);
     assert(in1_size == in2_size);
-    uint8_t out = memcmp(in1_addr, in2_addr, in1_size);
-    out = out == 0 ? 0 : 1;
+    uint8_t out;
+    assert(in1_size <= 8);
+    out = in1_addr[0] == in2_addr[0] && in1_addr[1] == in2_addr[1] && in1_addr[2] == in2_addr[2] && in1_addr[3] == in2_addr[3] && in1_addr[4] == in2_addr[4] && in1_addr[5] == in2_addr[5] && in1_addr[6] == in2_addr[6] && in1_addr[7] == in2_addr[7] ? 0 : 1;
     memcpy(out_addr, &out, 1);
 }
 
@@ -333,19 +349,22 @@ void POPCOUNT(void *out_addr, size_t out_size, void *in_addr, size_t in_size)
 // I don't want to be paying unwinding cost for this loop
 void POPCOUNT(void *out_addr, size_t out_size, void *in_addr, size_t in_size)
 {
-    unsigned int v = 0;                      // count bits set in this (32-bit value)
-    unsigned int c;                          // store the total here
-    static const int S[] = {1, 2, 4, 8, 16}; // Magic Binary Numbers
-    static const int B[] = {0x55555555, 0x33333333, 0x0F0F0F0F, 0x00FF00FF, 0x0000FFFF};
+    uint64_t v = 0;                              // count bits set in this (64-bit value)
+    unsigned int c;                              // store the total here
+    static const int S[] = {1, 2, 4, 8, 16, 32}; // Magic Binary Numbers
+    static const uint64_t B[] = {0x5555555555555555, 0x3333333333333333,
+                                 0x0F0F0F0F0F0F0F0F, 0x00FF00FF00FF00FF,
+                                 0x0000FFFF0000FFFF, 0x00000000FFFFFFFF};
 
     printf("POPCOUNT: %p %ld %p %ld %p %ld\n", out_addr, out_size, in_addr, in_size);
-    assert(in_size <= 4);
+    assert(in_size <= 8);
     memcpy(&v, in_addr, in_size);
     c = v - ((v >> 1) & B[0]);
     c = ((c >> S[1]) & B[1]) + (c & B[1]);
     c = ((c >> S[2]) + c) & B[2];
     c = ((c >> S[3]) + c) & B[3];
     c = ((c >> S[4]) + c) & B[4];
+    c = ((c >> S[5]) + c) & B[5];
     memcpy(out_addr, &c, out_size);
 }
 

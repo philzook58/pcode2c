@@ -1,9 +1,34 @@
+If I could remove all those memcpy checks.
+
+
+Ok I'm paying loop cost for printing. I could target the dispatch loop.
+Conditional compilation
+Remove the prints
+Inline the loop there ahead of time.
+
+CBMC_OPTIONS= --bounds-check --conversion-check --div-by-zero-check --float-overflow-check --malloc-fail-null \
+	--malloc-may-fail --nan-check --pointer-check --pointer-overflow-check --pointer-primitive-check \
+	--signed-overflow-check --undefined-shift-check --unsigned-overflow-check
+
+harness.c:(.text+0x377f): undefined reference to `INT_CARRY'
+/usr/bin/ld: harness.c:(.text+0x37bf): undefined reference to `INT_SCARRY'
+/usr/bin/ld: harness.c:(.text+0x4a22): undefined reference to `INT_CARRY'
+/usr/bin/ld: harness.c:(.text+0x4a59): undefined reference to `INT_SCARRY'
+/usr/bin/ld: harness.c:(.text+0x4ef8): undefined reference to `INT_CARRY'
+/usr/bin/ld: harness.c:(.text+0x4f3b): undefined reference to `INT_SCARRY'
+/usr/bin/ld: /tmp/ccnfoqer.o: in function `main':
+harness.c:(.text+0x638d): undefined reference to `FUNCTION'
+collect2: error: ld returned 1 exit status
+
+goto-diff
+go
+--taint in goto-analyzer
 Could also have stuff that process opens cbmc with the decompiler stuff?
 
 Hmm. Maybe I could also dump the high pcode output.
 
-
-
+values map usage.
+https://github.com/NationalSecurityAgency/ghidra/blob/master/Ghidra/Features/Base/ghidra_scripts/AskValuesExampleScript.java
 
 echo '
 import sys
@@ -13,6 +38,22 @@ from ghidra.util.task import ConsoleTaskMonitor
 decompinterface = DecompInterface()
 decompinterface.openProgram(currentProgram);
 functions = currentProgram.getFunctionManager().getFunctions(True)
+
+def block2c(block):
+    for inst in block.getInstructions(True):
+        print(inst)
+        pcodeOps = highFunction.getPcodeOps(inst.getAddress())
+        for op in pcodeOps:
+            pcode2c(op)
+
+
+def func2c(func):
+    currentProgram = getCurrentProgram()
+    blockModel = BasicBlockModel(currentProgram)
+    monitor = ConsoleTaskMonitor()
+    blocks = blockModel.getCodeBlocksContaining(func.getBody(), monitor)
+    for block in blocks:
+        block2c(block)
 
 with open("decompiled_output.c", "w") as output_file:
     for function in list(functions):
