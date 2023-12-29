@@ -1,4 +1,8 @@
- cbmc harness.c --object-bits 10 --unwind 2  --property main.assertion.1 --property main.assertion.2 --unwinding-assertions --boolector
+Output little vs big endian into makefile. also arch size
+
+
+
+cbmc harness.c --object-bits 10 --unwind 2  --property main.assertion.1 --property main.assertion.2 --unwinding-assertions --boolector
 
 If I could remove all those memcpy checks.
 

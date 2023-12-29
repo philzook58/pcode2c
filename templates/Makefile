@@ -1,7 +1,10 @@
 # Large amounts of unwinding are slower
 # Too few is unsound (--unwinding-assetion will fail)
 # set unwind to approximately number of basic blocks in longest execution path
-UNWIND=4
+UNWIND=2
+
+ENDIAN=--little-endian
+ARCH=--x86_64
 
 # if boolector is intalled, it is reccommended.
 # CBMC_OPTIONS += --boolector
@@ -24,4 +27,4 @@ CBMC_OPTIONS= --bounds-check --conversion-check --div-by-zero-check --float-over
 	--signed-overflow-check --undefined-shift-check --unsigned-overflow-check
 
 cbmc:
-	cbmc harness.c --unwinding-assertions --object-bits $(OBJECT_BITS) --unwind $(UNWIND)
+	cbmc harness.c --unwinding-assertions --object-bits $(OBJECT_BITS) --unwind $(UNWIND) $(ENDIAN) $(ARCH)
