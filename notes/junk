@@ -1,4 +1,37 @@
+exe:
+	$(CC) -g -Wformat=0 -Wimplicit-fallthrough=0 -o harness harness.c
+
+loops:
+	cbmc harness.c --show-loops
+
+z3 and boolector hit pretty hard
+--sat-solver cadical halves minisat time
+
+--external-sat-solver kissat is about as good as cadical
+
+--show-loops
+--no-built-in-assertions
 Output little vs big endian into makefile. also arch size
+Go through all the warnings. I should be using constant lablled by size.
+try enqueue now that carry is fixed.
+
+How we're printing negative constants seems wrong
+I should put pc = address _before_ the case.
+when Iincrease the unwindig, now the unwinding assertion fails. That is not good. Perhaps this is because 
+
+Ok so the new cbmc is way slower.
+Try uautomizer / cpachecker. This is it's own longshot
+
+demo breakpoint comparison
+
+speed up via... turn off symex?
+try kissat or cadical
+
+malloc is astonishingly faster for allocating blocks of memory in cbmc compared to statically sized arrays. I have no idea way
+It does seem like it is working correctly though.
+ass #include<astdlib.h> is way slower.... why?
+
+doesn't seem like inline annotations change anytihg much. Maybe 10%? but maybe not
 
 
 

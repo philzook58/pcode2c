@@ -1,8 +1,13 @@
 
 #include <string.h>
 #include <stdint.h>
-#include <stdio.h>
 #include <assert.h>
+
+#ifdef __CPROVER__
+#define printf(...) __CPROVER_printf(__VA_ARGS__)
+#else
+#include <stdio.h>
+#endif
 
 typedef struct CPUState
 {
@@ -73,14 +78,14 @@ void LOAD(void *output_addr, size_t output_size, void *input0_addr, size_t input
         memmove(output_addr, ram + temp, output_size);                                                                        \
     }
 
-/* An Indirect Store */
-void STORE(void *input0_addr, size_t input0_size, void *input1_addr, size_t input1_size, void *input2_addr, size_t input2_size)
-{
-    void *temp;
-    printf("STORE: %p %ld %p %ld %p %ld\n", input0_addr, input0_size, input1_addr, input1_size, input2_addr, input2_size);
-    memmove(&temp, input1_addr, input1_size);
-    memmove(temp, input2_addr, input2_size);
-}
+/* An Indirect Store. Input 1 holds a pointer. Then temp holds an offset in ram */
+#define STORE(input0_addr, input0_size, input1_addr, input1_size, input2_addr, input2_size)                                    \
+    {                                                                                                                          \
+        size_t temp;                                                                                                           \
+        printf("STORE: %p %ld %p %ld %p %ld\n", input0_addr, input0_size, input1_addr, input1_size, input2_addr, input2_size); \
+        memmove(&temp, input1_addr, input1_size);                                                                              \
+        memmove(ram + temp, input2_addr, input2_size);                                                                         \
+    }
 //  assert(out_size == in1_size && out_size == in2_size);
 // void LOAD(void *out_addr, void *in_addr, int size);
 
@@ -140,11 +145,11 @@ BOOL_BINOP(BOOL_XOR, ^) // Hmm. Is using this XOR ok?
 #define FBINOP(name, op) BINOP(name##32, op, 32, float) BINOP(name##64, op, 64, double)
 
 */
-#define IBINOP(name, op)                                                                                         \
+#define IBINOP_PRECOND(name, op, precond)                                                                        \
     void name(void *out_addr, size_t out_size, void *in1_addr, size_t in1_size, void *in2_addr, size_t in2_size) \
     {                                                                                                            \
         printf(#name ": %p %ld %p %ld %p %ld\n", out_addr, out_size, in1_addr, in1_size, in2_addr, in2_size);    \
-        assert(out_size == in1_size && out_size == in2_size);                                                    \
+        assert(precond);                                                                                         \
         if (out_size == 1)                                                                                       \
         {                                                                                                        \
             int8_t in1, in2, out;                                                                                \
@@ -183,6 +188,7 @@ BOOL_BINOP(BOOL_XOR, ^) // Hmm. Is using this XOR ok?
         }                                                                                                        \
     }
 
+#define IBINOP(name, op) IBINOP_PRECOND(name, op, out_size == in1_size && out_size == in2_size)
 IBINOP(INT_ADD, +)
 IBINOP(INT_SUB, -)
 IBINOP(INT_AND, &)
@@ -191,8 +197,8 @@ IBINOP(INT_XOR, ^)
 IBINOP(INT_REM, %)
 IBINOP(INT_DIV, /)
 IBINOP(INT_MULT, *)
-IBINOP(INT_LEFT, <<)
-IBINOP(INT_RIGHT, >>)
+IBINOP_PRECOND(INT_LEFT, <<, out_size == in1_size)
+IBINOP_PRECOND(INT_RIGHT, >>, out_size == in1_size)
 
 #define IPRED(name, opexpr, sign)                                                                                \
     void name(void *out_addr, size_t out_size, void *in0_addr, size_t in0_size, void *in1_addr, size_t in1_size) \
@@ -282,6 +288,7 @@ void INT_NOTEQUAL(uint8_t *out_addr, size_t out_size, uint8_t *in1_addr, size_t 
 
 void INT_ZEXT(void *out_addr, size_t out_size, void *in1_addr, size_t in1_size)
 {
+    printf("INT_ZEXT: %p %ld %p %ld\n", out_addr, out_size, in1_addr, in1_size);
     assert(out_size > in1_size);
     uint8_t out[out_size];
     memset(out, 0, out_size);
@@ -291,11 +298,19 @@ void INT_ZEXT(void *out_addr, size_t out_size, void *in1_addr, size_t in1_size)
 
 void INT_SEXT(void *out_addr, size_t out_size, void *in1_addr, size_t in1_size)
 {
+    printf("INT_SEXT: %p %ld %p %ld\n", out_addr, out_size, in1_addr, in1_size);
     assert(out_size > in1_size);
-    uint8_t out[out_size];
-    memset(out, 0, out_size);
-    memmove(out, in1_addr, in1_size);
-    memmove(out_addr, out, out_size);
+    // https://graphics.stanford.edu/~seander/bithacks.html#VariableSignExtend
+    unsigned b = out_size * 8; // number of bits representing the number in x
+    int64_t x = 0;             // sign extend this b-bit number to r
+    int64_t r;                 // resulting sign-extended number
+    int64_t m = 1U << (b - 1); // mask can be pre-computed if b is fixed
+
+    memmove(&x, in1_addr, in1_size);
+
+    // x = x & ((1U << b) - 1); // (Skip this if bits in x above position b are already zero.)
+    r = (x ^ m) - m;
+    memmove(out_addr, &r, out_size);
 }
 
 // IUNOP(INT_NEGATE, -)
