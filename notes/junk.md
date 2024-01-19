@@ -1,8 +1,14 @@
+refactor to use pypcode
+floating point
+_Generic switch?
+script to dump decompiled from ghidra
+dwarf annot
+
 exe:
-	$(CC) -g -Wformat=0 -Wimplicit-fallthrough=0 -o harness harness.c
+ $(CC) -g -Wformat=0 -Wimplicit-fallthrough=0 -o harness harness.c
 
 loops:
-	cbmc harness.c --show-loops
+ cbmc harness.c --show-loops
 
 z3 and boolector hit pretty hard
 --sat-solver cadical halves minisat time
@@ -17,7 +23,7 @@ try enqueue now that carry is fixed.
 
 How we're printing negative constants seems wrong
 I should put pc = address _before_ the case.
-when Iincrease the unwindig, now the unwinding assertion fails. That is not good. Perhaps this is because 
+when Iincrease the unwindig, now the unwinding assertion fails. That is not good. Perhaps this is because
 
 Ok so the new cbmc is way slower.
 Try uautomizer / cpachecker. This is it's own longshot
@@ -33,8 +39,6 @@ ass #include<astdlib.h> is way slower.... why?
 
 doesn't seem like inline annotations change anytihg much. Maybe 10%? but maybe not
 
-
-
 cbmc harness.c --object-bits 10 --unwind 2  --property main.assertion.1 --property main.assertion.2 --unwinding-assertions --boolector
 
 If I could remove all those memcpy checks.
@@ -48,17 +52,17 @@ Remove the prints
 Inline the loop there ahead of time.
 
 CBMC_OPTIONS= --bounds-check --conversion-check --div-by-zero-check --float-overflow-check --malloc-fail-null \
-	--malloc-may-fail --nan-check --pointer-check --pointer-overflow-check --pointer-primitive-check \
-	--signed-overflow-check --undefined-shift-check --unsigned-overflow-check
+ --malloc-may-fail --nan-check --pointer-check --pointer-overflow-check --pointer-primitive-check \
+ --signed-overflow-check --undefined-shift-check --unsigned-overflow-check
 
 harness.c:(.text+0x377f): undefined reference to `INT_CARRY'
-/usr/bin/ld: harness.c:(.text+0x37bf): undefined reference to `INT_SCARRY'
+/usr/bin/ld: harness.c:(.text+0x37bf): undefined reference to`INT_SCARRY'
 /usr/bin/ld: harness.c:(.text+0x4a22): undefined reference to `INT_CARRY'
-/usr/bin/ld: harness.c:(.text+0x4a59): undefined reference to `INT_SCARRY'
+/usr/bin/ld: harness.c:(.text+0x4a59): undefined reference to`INT_SCARRY'
 /usr/bin/ld: harness.c:(.text+0x4ef8): undefined reference to `INT_CARRY'
-/usr/bin/ld: harness.c:(.text+0x4f3b): undefined reference to `INT_SCARRY'
+/usr/bin/ld: harness.c:(.text+0x4f3b): undefined reference to`INT_SCARRY'
 /usr/bin/ld: /tmp/ccnfoqer.o: in function `main':
-harness.c:(.text+0x638d): undefined reference to `FUNCTION'
+harness.c:(.text+0x638d): undefined reference to`FUNCTION'
 collect2: error: ld returned 1 exit status
 
 goto-diff
@@ -69,7 +73,7 @@ Could also have stuff that process opens cbmc with the decompiler stuff?
 Hmm. Maybe I could also dump the high pcode output.
 
 values map usage.
-https://github.com/NationalSecurityAgency/ghidra/blob/master/Ghidra/Features/Base/ghidra_scripts/AskValuesExampleScript.java
+<https://github.com/NationalSecurityAgency/ghidra/blob/master/Ghidra/Features/Base/ghidra_scripts/AskValuesExampleScript.java>
 
 echo '
 import sys
@@ -86,7 +90,6 @@ def block2c(block):
         pcodeOps = highFunction.getPcodeOps(inst.getAddress())
         for op in pcodeOps:
             pcode2c(op)
-
 
 def func2c(func):
     currentProgram = getCurrentProgram()
@@ -114,11 +117,10 @@ int foo(int x){
     return x*x + 1;
 }
 " > /tmp/foo.c
-# huh. ghidra doesn't support dwarf 5? That seems nuts.
+
+# huh. ghidra doesn't support dwarf 5? That seems nuts
+
 gcc -gdwarf-4 -c /tmp/foo.c -o /tmp/foo.o
-
-
-
 
     # Setup decompiler
     # decompInterface = DecompInterface()
@@ -151,17 +153,18 @@ gcc -gdwarf-4 -c /tmp/foo.c -o /tmp/foo.o
 
 }
 
-
 void COPY(addr1,addr2, size){
     memcpy(addr1, addr2, size);
 }
 
-#define BINOP64(name, operator) void name(out,in1,in2){ }
-#define BINOP(name,op,type)  void name(out,in1,in2){ type in1, in2, out; memcpy(&in1, in1, sizeof(type));\
+# define BINOP64(name, operator) void name(out,in1,in2){ }
+
+# define BINOP(name,op,type)  void name(out,in1,in2){ type in1, in2, out; memcpy(&in1, in1, sizeof(type));\
+
     memcpy(&in2, in2, sizeof(type)); \
     out = in1 operator in2; \
     memcpy(out, out, sizeof(type)); }
-We need to 
+We need to
 void INT_ADD64(a1,a2,a3){
     int64_t op1, op2, out;
     memcpy(&in1, a1, 64);
@@ -201,9 +204,7 @@ BINOP(INT_ADD);
                 else:
                     print("Other operation at", op.getAddress())
 
-https://github.com/niconaus/pcode-interpreter/blob/main/Interpreter.hs
-
-
+<https://github.com/niconaus/pcode-interpreter/blob/main/Interpreter.hs>
 
     assert numInputs <= 3
     if numInputs == 1:

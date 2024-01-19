@@ -1,0 +1,9 @@
+[project]
+name = "pcode2c"
+version = "0.1"
+authors = [{ name = "Philip Zucker" }]
+description = "A compiler from pcode to C"
+dependencies = ["pypcode", "pyelftools"]
+
+[tool.setuptools]
+packages = ["pcode2c"]

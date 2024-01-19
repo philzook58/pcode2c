@@ -26,6 +26,7 @@ CBMC_OPTIONS+=--no-built-in-assertions
 #CBMC_OPTIONS+= --bounds-check --conversion-check --div-by-zero-check --float-overflow-check --malloc-fail-null \
 #	--malloc-may-fail --nan-check --pointer-check --pointer-overflow-check --pointer-primitive-check \
 #	--signed-overflow-check --undefined-shift-check --unsigned-overflow-check
+#CBMC_OPTIONS+= --graphml-witness witness.graphml
 
 # Some alternative solver options to consider. YMMV.
 #SOLVER=--z3
@@ -35,8 +36,7 @@ CBMC_OPTIONS+=--no-built-in-assertions
 
 cbmc:
 	cbmc $(HARNESS) --unwinding-assertions --object-bits $(OBJECT_BITS) \
-	--unwind $(UNWIND) $(ENDIAN) --arch $(ARCH) $(SOLVER) $(CBMC_OPTIONS) \
-	--graphml-witness witness.graphml
+	--unwind $(UNWIND) $(ENDIAN) --arch $(ARCH) $(SOLVER) $(CBMC_OPTIONS)
 
 exe:
-	$(CC) -o verify (HARNESS)
+	$(CC) -o verify $(HARNESS)
