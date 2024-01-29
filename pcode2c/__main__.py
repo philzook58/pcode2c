@@ -12,18 +12,19 @@ if __name__ == "__main__":
     parser.add_argument("filename")
     # parser.add_argument("-f", "--function")
     # parser.add_argument("-a", "--address")
-    parser.add_argument("-b", "--langid")
+    parser.add_argument("-b", "--langid", default="x86:LE:64:default")
     # parser.add_argument("-o", "--output")
     args = parser.parse_args()
     with open(args.filename, "rb") as file:
         elffile = ELFFile(file)
 
         # Get the symbol table
-        # symtab = elffile.get_section_by_name(".symtab")
+        # if args.function is not None:
+        #    symtab = elffile.get_section_by_name(".symtab")
         # Search for the function in the symbol table
-        # for symbol in symtab.iter_symbols():
-        #    if symbol.name == function_name:
-        #        addr = symbol['st_value']
+        #    for symbol in symtab.iter_symbols():
+        #        if symbol.name == args.function:
+        #            fun_addr = symbol["st_value"]
 
         # Iterate over sections and find the .text section
         for section in elffile.iter_sections():
@@ -34,25 +35,26 @@ if __name__ == "__main__":
                 code = file.read(size)
                 break
 
-    langid = args.langid or "x86:LE:64:default"
+    langid = args.langid
     ctx = Context(langid)
     dx = ctx.disassemble(code)
     insns = {insn.addr.offset: insn for insn in dx.instructions}
     # print(fmt_arch_header(ctx))
     res = ctx.translate(code)
+    print(header)
     for op in res.ops:
         if op.opcode == pypcode.OpCode.IMARK:
             assert len(op.inputs) == 1
             addr = op.inputs[0].offset
             ins = insns[addr]
             print(
-                f"""
+                f"""\
         case 0x{addr:x}:
-            INSN(0x{addr:x},"{ins.addr.offset:#x}: {ins.mnem} {ins.body}")
-            """
+            INSN(0x{addr:x},"{ins.addr.offset:#x}: {ins.mnem} {ins.body}")"""
             )
         else:
-            print("//", PcodePrettyPrinter.fmt_op(op))
-            print(fmt_insn(op))
+            # print("//", PcodePrettyPrinter.fmt_op(op))
+            print("            " + fmt_insn(op))
             if op.opcode == pypcode.OpCode.RETURN:
-                print("return;")
+                print("            return;")
+    print(footer)

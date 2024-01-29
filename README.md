@@ -10,6 +10,19 @@ This enables soundly answering questions about the relationship between high lev
 
 ## Installation
 
+```bash
+python3 -m pip install -e .
+```
+
+## Usage
+
+```bash
+python3 -m pcode2c ./examples/min/mymin.o > tmp.c
+gcc -I _templates -c tmp.c 
+```
+
+## Ghidra Plugin Installation
+
 - Open up Ghidra on a binary
 - Click on `Window > Script Manager` in the toolbar
 - Manage Script Directories button in top right of Script Manager window (looks like a checklist)
