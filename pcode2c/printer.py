@@ -36,12 +36,34 @@ def is_branch(op: pypcode.OpCode):
 
 def fmt_varnode(varnode: pypcode.Varnode):
     if varnode.space.name == "const":
-        return hex(varnode.offset) + "ull, " + hex(varnode.size) + "ull"
+        return (
+            "(uint8_t *)&(long unsigned int){"
+            + hex(varnode.offset)
+            + "ul}, "
+            + hex(varnode.size)
+            + "ul"
+        )
 
     regname = varnode.getRegisterName()
     if regname != "":
         regname = f" /* {regname} */"
-    return f"{varnode.space.name}_space + {hex(varnode.offset)}ull{regname}, {varnode.size}ull"
+    return f"{varnode.space.name}_space + {hex(varnode.offset)}ul{regname}, {varnode.size}ul"
+
+
+def fmt_varnode_separate_space(varnode: pypcode.Varnode):
+    if varnode.space.name == "const":
+        return (
+            "0, (uint8_t *)&(long unsigned int){"
+            + hex(varnode.offset)
+            + "ul}, "
+            + hex(varnode.size)
+            + "ul"
+        )
+
+    regname = varnode.getRegisterName()
+    if regname != "":
+        regname = f" /* {regname} */"
+    return f"{varnode.space.name}_space, {hex(varnode.offset)}ul{regname}, {varnode.size}ul"
 
 
 def fmt_insn(op: pypcode.PcodeOp):
@@ -49,8 +71,15 @@ def fmt_insn(op: pypcode.PcodeOp):
     args.extend(fmt_varnode(varnode) for varnode in op.inputs)
     args = ", ".join(args)
     opcode = str(op.opcode).replace("pypcode.pypcode_native.OpCode.", "")
-    if is_branch(op.opcode):
-        return f"{opcode}({args});break;"
+    if op.opcode == pypcode.OpCode.BRANCH:
+        return f"BRANCH_GOTO_TEMPFIX({fmt_varnode_separate_space(op.inputs[0])})"
+    elif op.opcode == pypcode.OpCode.CBRANCH:
+        args = (
+            fmt_varnode_separate_space(op.inputs[0])
+            + ", "
+            + fmt_varnode_separate_space(op.inputs[1])
+        )
+        return f"CBRANCH_GOTO_TEMPFIX({args})"
     else:
         return f"{opcode}({args});"
 
@@ -96,6 +125,8 @@ def pcode2c(filename, langid):
                 file.seek(offset)
                 code = file.read(size)
                 break
+        if len(code) == 0:
+            raise ValueError("No .text section found")
 
     ctx = Context(langid)
     dx = ctx.disassemble(code)
@@ -111,7 +142,8 @@ def pcode2c(filename, langid):
             output.append(
                 f"""\
         case 0x{addr:x}:
-            INSN(0x{addr:x},"{ins.addr.offset:#x}: {ins.mnem} {ins.body}")"""
+        L_0x{addr:x}ul:
+            INSN(0x{addr:x}ul,"{ins.addr.offset:#x}: {ins.mnem} {ins.body}")"""
             )
         else:
             # print("//", PcodePrettyPrinter.fmt_op(op))

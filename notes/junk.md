@@ -1,3 +1,17 @@
+Fix all -Wformat errors
+return code from decomp. (good idea? I mean i guess I could check the state anyhow
+And know in an application specific way. Naw. This seems nice.
+)
+enum {CALL, CALLIND, RETURN, BREAKPOINT}
+switch over to separated space and offset
+map in the code itself in case we look atca it?
+
+init_state(); helper routine.
+post bug about slowness of malloc vs static array
+
+add symbol dump and arch dump
+automatic tranlsation validation
+
 refactor to use pypcode
 floating point
 _Generic switch?

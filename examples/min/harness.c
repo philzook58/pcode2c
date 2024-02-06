@@ -11,13 +11,13 @@ int main()
     state.reg = reg;
     state.unique = unique;
     state.ram = ram;
-    state.pc = 0x00100000;
+    state.pc = 0; // 0x00100000;
     uint8_t rsi, rdi;
     // rsi = 3;
     // rdi = 10;
     state.reg[RSI] = rsi;
     state.reg[RDI] = rdi;
-    mymin(&state, -1);
+    pcode2c(&state, -1);
     uint8_t ret = state.reg[RAX];
     assert(ret == rsi || ret == rdi);
     assert(ret <= rsi && ret <= rdi);

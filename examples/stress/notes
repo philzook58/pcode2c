@@ -1,0 +1,5 @@
+gcc -Wall -Wextra -Wpedantic -fsanitize=undefined,address memory.c 
+
+0x10000 malloc size 2s
+0x100000 32s
+
