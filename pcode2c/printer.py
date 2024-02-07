@@ -59,29 +59,49 @@ def fmt_varnode_separate_space(varnode: pypcode.Varnode):
             + hex(varnode.size)
             + "ul"
         )
-
     regname = varnode.getRegisterName()
     if regname != "":
         regname = f" /* {regname} */"
     return f"{varnode.space.name}_space, {hex(varnode.offset)}ul{regname}, {varnode.size}ul"
 
 
+unique_pcode_insn_id = 0
+
+
+def fmt_branch_dest_varnode(varnode):
+    # Special case this generation to support realtive pcode jumps
+    if varnode.space.name == "const":
+        return (
+            "0, P_"
+            + hex(varnode.offset + unique_pcode_insn_id)
+            + ", "
+            + hex(varnode.size)
+            + "ul"
+        )
+    elif varnode.space.name == "ram":
+        return f"{varnode.space.name}_space, {hex(varnode.offset)}ul, {varnode.size}ul"
+    else:
+        raise ValueError(f"Bad branch dest space {varnode.space.name}")
+
+
 def fmt_insn(op: pypcode.PcodeOp):
+    global unique_pcode_insn_id
+    unique_pcode_insn_id += 1
     args = [fmt_varnode(op.output)] if op.output else []
     args.extend(fmt_varnode(varnode) for varnode in op.inputs)
     args = ", ".join(args)
     opcode = str(op.opcode).replace("pypcode.pypcode_native.OpCode.", "")
     if op.opcode == pypcode.OpCode.BRANCH:
-        return f"BRANCH_GOTO_TEMPFIX({fmt_varnode_separate_space(op.inputs[0])})"
+        return f"L_P_{hex(unique_pcode_insn_id)}: BRANCH_GOTO_TEMPFIX({fmt_branch_dest_varnode(op.inputs[0])});"
     elif op.opcode == pypcode.OpCode.CBRANCH:
         args = (
-            fmt_varnode_separate_space(op.inputs[0])
+            fmt_branch_dest_varnode(op.inputs[0])
             + ", "
             + fmt_varnode_separate_space(op.inputs[1])
         )
-        return f"CBRANCH_GOTO_TEMPFIX({args})"
+        return f"L_P_{hex(unique_pcode_insn_id)}: CBRANCH_GOTO_TEMPFIX({args});"
     else:
-        return f"{opcode}({args});"
+        return f"L_P_{hex(unique_pcode_insn_id)}: {opcode}({args});"
 
 
 header = """\
@@ -148,8 +168,6 @@ def pcode2c(filename, langid):
         else:
             # print("//", PcodePrettyPrinter.fmt_op(op))
             output.append("            " + fmt_insn(op))
-            if op.opcode == pypcode.OpCode.RETURN:
-                output.append("            return;")
     output.append(footer)
     return output
 

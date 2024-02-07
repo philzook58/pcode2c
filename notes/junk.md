@@ -1,3 +1,33 @@
+I've really uglified with these goto annotations.
+
+PREINSN
+POSTINSN
+I could put some into INSN
+
+I could put others in pcdoe instructions
+
+relative branch
+if(space == 0){
+    goto P_ ## current + offset
+    pc = pc + offset;
+}
+else{
+    pc = pc + offset;
+}
+but I need to do the offset math at compile time in order to goto or add a while-switch. Ugh.
+ugh. I think the simplest thing to do is special case the generation of branch.
+
+Dynamic linked libraries:
+
+1. refuse to engage. Hmm. Maybe this is right?
+2. plt section
+3. grab loaded core rather than file
+
+seaparate out python 2 compatible stuff
+
+ok I should actually be loading.
+I should look in the segments, not sections and find any with executable bits
+
 Fix all -Wformat errors
 return code from decomp. (good idea? I mean i guess I could check the state anyhow
 And know in an application specific way. Naw. This seems nice.
