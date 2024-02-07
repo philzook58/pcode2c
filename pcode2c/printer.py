@@ -136,23 +136,36 @@ def pcode2c(filename, langid):
         #    for symbol in symtab.iter_symbols():
         #        if symbol.name == args.function:
         #            fun_addr = symbol["st_value"]
+        e_type = elffile.header["e_type"]
+        if e_type == "ET_EXEC":
+            for segment in elffile.iter_segments():
+                if segment["p_flags"] & 0x1:  # PF_X flag is 1
+                    offset = segment["p_offset"]
+                    base = segment["p_vaddr"]
+                    size = segment["p_memsz"]
+                    break
 
-        # Iterate over sections and find the .text section
-        for section in elffile.iter_sections():
-            if section.name == ".text":
-                offset = section.header["sh_offset"]
-                size = section.header["sh_size"]
-                file.seek(offset)
-                code = file.read(size)
-                break
-        if len(code) == 0:
-            raise ValueError("No .text section found")
+        elif e_type == "ET_DYN":
+            # Iterate over sections and find the .text section
+            for section in elffile.iter_sections():
+                if section.name == ".text":
+                    offset = section.header["sh_offset"]
+                    size = section.header["sh_size"]
+                    base = 0
+                    break
+
+        else:
+            raise ValueError("Unknown ELF type")
+        if size == 0:
+            raise ValueError("No code found")
+        file.seek(offset)
+        code = file.read(size)
 
     ctx = Context(langid)
-    dx = ctx.disassemble(code)
+    dx = ctx.disassemble(code, base_address=base)
     insns = {insn.addr.offset: insn for insn in dx.instructions}
     # print(fmt_arch_header(ctx))
-    res = ctx.translate(code)
+    res = ctx.translate(code, base_address=base)
     output.append(header)
     for op in res.ops:
         if op.opcode == pypcode.OpCode.IMARK:

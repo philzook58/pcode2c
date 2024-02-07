@@ -1,0 +1,2 @@
+Yes so -no-pie gives me an ET_EXEC rather than ET_DYN
+
