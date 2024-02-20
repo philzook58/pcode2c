@@ -1,4 +1,38 @@
+what do we do with interior markers? Just dump them?
+could do C rewriting step first to uglify and expand.
+Can I get line tables from llvm input?
+I guess better yet I could parse the C using clang and make some overapproximation of what
+program positions I think are sensible.
+There isn't persay a C spec answer here? Since these are sub observable beahovior positions?
+But come on.
 
+Iteratively delete statements as cbmc finds counterexamples.
+
+<https://github.com/Nalen98/GhidraEmu>
+<https://github.com/NationalSecurityAgency/ghidra/blob/master/Ghidra/Features/Decompiler/src/decompile/cpp/opbehavior.cc>
+<https://github.com/NationalSecurityAgency/ghidra/blob/master/Ghidra/Features/Decompiler/src/decompile/cpp/emulate.cc>
+
+Try to use CLE
+dwarf annotation example. blog it
+
+command line in bytes
+command line in asm string / .s file
+
+dump smt formula. Is it useful / interpretable?
+
+INSN_START
+INSN_END  (has goto in it)
+
+collect up seen address. Use as new starts
+collect up from symbols.
+This is quite silly.
+I could also just disassemble every byte....
+Hmm. That's intriguing
+explicit goto at the ned might get rid of implicit-fallthrough complaint. or I could put in the break then.
+
+Take in new starts as command line params
+
+<https://andrewkelley.me/post/jamulator.html>  nes static translation
 <https://www.gtoal.com/sbt/>
 revng
 lasagne binary-transation.github.io

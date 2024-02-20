@@ -2,6 +2,28 @@ import subprocess
 import tempfile
 
 
+def single(precond, postcond, equality=False):
+    return f"""\
+int main(){{
+    CPUState state;
+    init_state(&state);
+    __CPROVER_assume({precond});
+    pcode2c(&state, -1);
+    __CPROVER_assert({postcond});
+}}"""
+
+
+def comparative(precond, postcond, equality=False):
+    return f"""\
+int main(){{
+    CPUState state_orig, state_mod;
+    __CPROVER_assume({precond});
+    pcode2c_orig(&state_orig, -1);
+    pcode2c_mod(&state_mod, -1);
+    __CPROVER_assert({postcond}, "Postcondition");
+}}"""
+
+
 def run_cbmc(filename, args):
     subprocess.run(["cbmc", filename, *args])
 

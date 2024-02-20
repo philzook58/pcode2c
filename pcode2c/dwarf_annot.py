@@ -25,6 +25,37 @@ def get_full_file_path(die, dwarfinfo, cu):
         return "Unknown"
 
 
+from elftools.dwarf.locationlists import LocationParser
+
+
+# process linetable
+def linetable(dwarfinfo):
+    for CU in dwarfinfo.iter_CUs():
+        lineprogram = dwarfinfo.line_program_for_CU(CU)
+        for entry in lineprogram.get_entries():
+            if entry.state is not None:
+                print(entry.state)
+        return lineprogram
+
+
+# get AT_location info from dwarfinfo
+def locations_info(dwarfinfo):
+    llp = dwarfinfo.location_lists()
+    locparser = LocationParser(llp)
+    vars = {}
+    for CU in dwarfinfo.iter_CUs():
+        for die in CU.iter_DIEs():
+            if die.tag == "DW_TAG_variable":
+                loc = die.attributes.get("DW_AT_location")
+                if loc:
+                    myloc = locparser.parse_from_attribute(
+                        loc, CU.header.version, die=die
+                    )
+                    name = die.attributes["DW_AT_name"].value.decode("utf-8")
+                    vars[name] = myloc
+    return vars
+
+
 def process_elf_file(filename):
     with open(filename, "rb") as f:
         elffile = ELFFile(f)
@@ -34,6 +65,15 @@ def process_elf_file(filename):
 
         set_global_machine_arch(elffile.get_machine_arch())
         dwarfinfo = elffile.get_dwarf_info()
+        loclists = locations_info(dwarfinfo)
+        # for loc_entity in loclists.values:
+        #    describe_DWARF_expr(loc_entity.loc_expr, dwarfinfo.structs, cu_offset)
+
+        lineprogram = linetable(dwarfinfo)
+        for entry in lineprogram.get_entries():
+            if entry.is_stmt:
+                # check if C code is all whitespace before this.
+                line_addr[entry.line] = entry.address
 
         die_info = {}
         for CU in dwarfinfo.iter_CUs():
@@ -62,13 +102,12 @@ def process_elf_file(filename):
 
 
 def die_var2C(var):
-    return f"""
-    decomp(state, {var.addr});
-    assert(state->gr[{var.loc}] == {var.name});"""
+    # {'line': 10, 'name': 'result', 'type': 'DW_TAG_variable', 'column': 9, 'low_pc': 'Unknown'}
+    return f"""DW_TAG_VARIABLE("{var['name']}", {var['low_pc']});\n"""
 
 
 def die_label2C(label):
-    return f"decomp(&state, {label['low_pc']}); "
+    return f"""DW_TAG_LABEL("{label['name']}", {label['low_pc']});\n"""
 
 
 def patch_data2C(patch_data):
@@ -78,11 +117,11 @@ def patch_data2C(patch_data):
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="DWARF annotation tool")
     parser.add_argument("input", help="Input file")
-    parser.add_argument("-p", "--patch", help="Patch Data")
+    # parser.add_argument("-p", "--patch", help="Patch Data")
     parser.add_argument("-o", "--output", help="Output file")
     args = parser.parse_args()
     print(args.input)
-    print(args.output)
+    # print(args.output)
     die_info = process_elf_file(args.input)
     print(die_info)
     for filename, dies in die_info.items():
@@ -93,12 +132,13 @@ if __name__ == "__main__":
             with sys.stdout if args.output == None else open(args.output, "w") as o:
                 lines = f.readlines()
                 for entry in dies:
-                    line_num = entry["line"]
-                    if entry["type"] == "DW_TAG_label":
+                    if entry["type"] == "DW_TAG_variable":
+                        comment = die_var2C(entry)
+                    elif entry["type"] == "DW_TAG_label":
                         comment = die_label2C(entry)
                     else:
-                        comment = ""
-                    comment += f"// {entry['type']} {entry['name']}\n"
+                        comment = f"// {entry['type']} {entry['name']}\n"
+                    line_num = entry["line"]
                     if line_num <= len(lines):
                         lines.insert(line_num - 1, comment)
                 o.writelines(lines)
