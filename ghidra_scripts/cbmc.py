@@ -45,6 +45,7 @@ if cfile == default_file:
         f.write(ccode)
     cfile = filename
 
+# TODO get arch, get bits, get endianess
 command = [
     "cbmc",
     cfile,
@@ -63,9 +64,6 @@ if solver != "default":
     command.append("--" + solver)
 
 print("Running command: `" + " ".join(command) + "`")
-# res = subprocess.check_output(command)
-# todo, get arch, get bits, get endian
-# print(res)
 
 
 import subprocess

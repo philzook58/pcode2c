@@ -1,3 +1,13 @@
+Something comparative? Eh.
+Simple C printing
+grab eax using
+patcherex script
+e9patch
+scrtip
+a file with a bunch of patchable functions
+
+get a stringbox
+
 what do we do with interior markers? Just dump them?
 could do C rewriting step first to uglify and expand.
 Can I get line tables from llvm input?
@@ -7,6 +17,11 @@ There isn't persay a C spec answer here? Since these are sub observable beahovio
 But come on.
 
 Iteratively delete statements as cbmc finds counterexamples.
+Jiggle statements.
+
+so dwarf had block delimiters, epilog, prolog,
+<https://gcc.gnu.org/legacy-ml/gcc-patches/2009-04/msg01679.html> discirminator. identify blocks that correspond to same source position
+isa - which instruction set. Useful for thumb probably. isa fff for data? I mean perhaps one could infer it anyhow.
 
 <https://github.com/Nalen98/GhidraEmu>
 <https://github.com/NationalSecurityAgency/ghidra/blob/master/Ghidra/Features/Decompiler/src/decompile/cpp/opbehavior.cc>
