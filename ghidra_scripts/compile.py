@@ -23,31 +23,73 @@ from javax.swing import (
 )
 from java.awt import BorderLayout, Component, Dimension
 from java.awt.event import ActionListener
+import subprocess
 
 template = """\
 #include <stdint.h>
-#define READREG(name) asm(res, uint64_t)
-#define WRITEREG(name)  
+#define WRITEREG(name) asm( "" ::"r"(name));
 uint64_t CALLBACK(uint64_t rdi, uint64_t rsi, uint64_t rdx, uint64_t rcx, uint64_t r8, uint64_t r9); 
 uint64_t PATCHCODE(uint64_t rdi, uint64_t rsi, uint64_t rdx, uint64_t rcx, uint64_t r8, uint64_t r9){
-  // extra registers ex: READREG(rax)
-  // PATCHCODE HERE
+  // **** READ REGISTERS ****
+  // Calling convention registers already available.
+  // ex: register uint64_t rax asm ("rax");
+  // **** END READ REGISTERS ****
+
+  // **** PATCH CODE HERE ****
   
-  // END PATCHCODE
-  // extra registers write
+  // **** END PATCH CODE ****
+
+  // **** WRITE REGISTERS ****
+  // ex: WRITEREG(rax);
+  // By default only calling convention registers are preserved.
   return CALLBACK(rdi, rsi, rdx, rcx, r8, r9);
+  // **** END WRITE REGISTERS ****
 }
+
+// Put Help here.
 """
+
+# could generate this from ghidra?
+# can I use GHC abi?
+# should I unmacroize and just give comment examples?
+
+compiler_data = {
+    "x86_64": {
+        "cc": "x86_64-linux-gnu-gcc",
+        "args": "uint64_t rdi, uint64_t rsi, uint64_t rdx, uint64_t rcx, uint64_t r8, uint64_t r9",
+        # "ret": "rax",
+    },
+    "powerpc": {
+        "cc": "powerpc-linux-gnu-gcc",
+        "args": "uint64_t r3, uint64_t r4, uint64_t r5, uint64_t r6, uint64_t r7, uint64_t r8",
+    },
+    "arm64": {
+        "cc": "aarch64-linux-gnu-gcc",
+        "args": "uint64_t r0, uint64_t r1, uint64_t r2, uint64_t r3",
+    },
+    "arm32": {
+        "cc": "arm-linux-gnueabi-gcc",
+        "args": "uint64_t r0, uint64_t r1, uint64_t r2, uint64_t r3",
+    },
+}
 
 
 def run_compiler(code):
+    values = ghidra.features.base.values.GhidraValuesMap()
+    values.defineString("Compiler", "gcc")
+    values.defineString("Options", "-Os -masm=intel -fverbose-asm")
+    values = askValues("Patch", None, values)
+
     with open("/tmp/patch_code.c", "w") as f:
         f.write(code)
         f.flush()
     try:
         subprocess.check_output(
             [
-                "gcc -S -Os -fverbose-asm -c /tmp/patch_code.c -o /tmp/patch_code.s"
+                "{compiler} -S {options} -c /tmp/patch_code.c -o /tmp/patch_code.s".format(
+                    compiler=values.getString("Compiler"),
+                    options=values.getString("Options"),
+                )
                 # "gcc",
                 # "-Os",
                 # "-S",
@@ -104,21 +146,3 @@ def main():
 
 
 main()
-
-
-import subprocess
-
-
-def old_call_compiler(code):
-    with open("/tmp/patch_code.c", "w") as f:
-        f.write(
-            """
-            void CALLBACK({});
-            void PATCHCODE({}) {{
-                {}
-            CALLBACK({});
-                }}
-            """.format(
-                out_args, in_args, code, out_args
-            )
-        )

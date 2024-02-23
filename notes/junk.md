@@ -1,3 +1,19 @@
+askvalues after compiler ask
+editting elf dasta manually in ghidra?
+putting patch_label: as the end of code
+jmp patch0:
+
+vlaidate command, takes in decompiled C, runs pcode2c, asserts typical stuff?
+run diff on two files.
+Ghidra already does this <https://cve-north-stars.github.io/docs/Ghidra-Patch-Diffing> <https://github.com/clearbluejar/ghidriff>
+<https://github.com/threatrack/ghidra-patchdiff-correlator>
+
+<https://ghidra.re/ghidra_docs/api/ghidra/app/plugin/assembler/Assemblers.html>
+ Assembler asm = Assemblers.getAssembler(currentProgram);
+ asm.assemble(currentAddress, "ADD ...");
+
+micropatching with lang chain. Actions: call compiler, patcherex, objdump. Has to pass cbmc
+
 Something comparative? Eh.
 Simple C printing
 grab eax using

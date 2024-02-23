@@ -10,3 +10,6 @@ my_patch = patcherex2.ModifyInstructionPatch(addr, code)
 proj.patches.append(my_patch)
 proj.apply_patches()
 proj.binfmt_tool.save_binary("a_patched.out")
+
+
+code = "x = x + 3;"

@@ -6,8 +6,7 @@ import subprocess
 
 values = ghidra.features.base.values.GhidraValuesMap()
 
-default_file = "decompiler"
-values.defineFile("C File", java.io.File(default_file))
+values.defineFile("C File (default is decompiler)", java.io.File(""))
 values.defineInt("Unwind", 1)
 values.defineInt("Object Bits", 8)
 values.defineChoice("Solver", "default", "default", "smt2", "boolector")
@@ -36,7 +35,7 @@ def getCCode():
 
 
 cfile = str(values.getFile("C File"))
-if cfile == default_file:
+if cfile == "":
     ccode = getCCode()
     print("Writing decompiled code to /tmp/decomp.c:")
     print(ccode)
