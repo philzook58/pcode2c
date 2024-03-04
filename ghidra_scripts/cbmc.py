@@ -12,7 +12,7 @@ values.defineInt("Object Bits", 8)
 values.defineChoice("Solver", "default", "default", "smt2", "boolector")
 values.defineString(
     "Options",
-    "--bounds-check --conversion-check --div-by-zero-check --float-overflow-check --malloc-fail-null \
+    "--trace --bounds-check --conversion-check --div-by-zero-check --float-overflow-check --malloc-fail-null \
 	--malloc-may-fail --nan-check --pointer-check --pointer-overflow-check --pointer-primitive-check \
 	--signed-overflow-check --undefined-shift-check --unsigned-overflow-check --memory-leak-check",
 )
@@ -34,8 +34,8 @@ def getCCode():
     return ccode
 
 
-cfile = str(values.getFile("C File"))
-if cfile == "":
+cfile = values.getFile("C File (default is decompiler)")
+if cfile == None:
     ccode = getCCode()
     print("Writing decompiled code to /tmp/decomp.c:")
     print(ccode)
@@ -43,6 +43,8 @@ if cfile == "":
     with open(filename, "w") as f:
         f.write(ccode)
     cfile = filename
+else:
+    cfile = str(cfile)
 
 # TODO get arch, get bits, get endianess
 command = [
@@ -55,7 +57,6 @@ command = [
     "--function",
     values.getString("Function"),
     "--unwinding-assertions",
-    "--trace",
 ] + values.getString("Options").split()
 
 solver = values.getChoice("Solver")

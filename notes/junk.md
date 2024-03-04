@@ -1,3 +1,11 @@
+diff C, add cbmc annotations at those positions?
+
+> add detour script
+> elf space script?
+
+look at in objdump. Hard to read flags in ghidra?
+G > file(0x1000)
+
 askvalues after compiler ask
 editting elf dasta manually in ghidra?
 putting patch_label: as the end of code

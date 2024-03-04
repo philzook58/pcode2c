@@ -1,5 +1,5 @@
 # @category: PCode2C
-# @toolbar icon.gif
+# @toolbar patcherex2.jpeg
 # @menupath Pcode2C.patcherex_insert
 
 import subprocess

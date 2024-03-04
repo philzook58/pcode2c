@@ -1,6 +1,6 @@
 # @category: PCode2C
-# @toolbar scripts/C_Logo.png
-# @menupath Pcode2C.run
+# @toolbar Ghidra_Logo.png
+# @menupath Pcode2C.pcode2c
 
 import subprocess
 
@@ -12,7 +12,7 @@ startAddress = func.getEntryPoint()
 
 endAddress = func.getBody().getMaxAddress()
 listing = currentProgram.getListing()
-insn = listing.getInstructionAt(endAddress)
+insn = listing.getInstructionContaining(endAddress)
 endAddress = endAddress.add(insn.getLength())
 
 language = currentProgram.getLanguageCompilerSpecPair()

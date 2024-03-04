@@ -1,5 +1,5 @@
 # @category: PCode2C
-# @toolbar icon.gif
+# @toolbar C_Logo.png
 # @menupath Pcode2C.compile
 
 # values = ghidra.features.base.values.GhidraValuesMap()
