@@ -1,3 +1,27 @@
+Ok...
+Harness in compile like window. Call cbmc.
+
+libvmi - <https://libvmi.com/>
+gogle rekall <https://github.com/google/rekall>
+readlf -l /proc/kcore
+inotify
+gdb
+sudo rea
+readelf -l /proc/kcore , symbolization
+
+A pull request to patcherex2.
+micropatcherex
+
+Make documentation
+
+- Better loader implementation. Not a problem anymore. Could also go back to old style ghidra export sript
+Reflecting inline data into the interpreter.
+
+Just take in an offset and an address, size as command line options.
+Dump byte array as C variable.
+
+Can I dump right after loading
+
 diff C, add cbmc annotations at those positions?
 
 > add detour script

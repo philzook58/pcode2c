@@ -19,6 +19,14 @@ typedef struct CPUState
     size_t pc;
 } CPUState;
 
+// TODO: These are not good generic values.
+void init_CPUState(CPUState *state)
+{
+    state->reg = malloc(0x2000);
+    state->unique = malloc(0x200000);
+    state->ram = malloc(0x200000);
+}
+
 // Using macro rather than loop so not to pay unwinding cost in BMC
 #define PRINTREG(N)                               \
     {                                             \

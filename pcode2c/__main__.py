@@ -11,7 +11,11 @@ if __name__ == "__main__":
     parser.add_argument("filename")
     # parser.add_argument("-f", "--function")
     parser.add_argument("--start-address")
-    parser.add_argument("--end-address")
+    parser.add_argument("--file-offset")
+    # parser.add_argument("--")
+    parser.add_argument("--size")
+    # parser.add_arguments("--disasm-all-bytes")
+    # parser.add_argument("--end-address")
     parser.add_argument("--headers", action="store_true", help="Generate arch header")
     # parser.add_argument("--single-file", description="Generate a single file")
     parser.add_argument("-b", "--langid", default="x86:LE:64:default")
@@ -28,7 +32,9 @@ if __name__ == "__main__":
     for line in pcode2c(
         args.filename,
         args.langid,
-        start_address=int(args.start_address, 16) if args.start_address else None,
-        end_address=int(args.end_address, 16) if args.end_address else None,
+        start_address=int(args.start_address, 16),  # if args.start_address else None,
+        file_offset=int(args.file_offset, 16),
+        size=int(args.size, 16),
+        # end_address=int(args.end_address, 16) if args.end_address else None,
     ):
         print(line)

@@ -120,74 +120,21 @@ footer = """\
 }}}"""
 
 
-from elftools.elf.elffile import ELFFile
 from pypcode import Context, PcodePrettyPrinter
 
 
-def pcode2c(filename, langid, start_address=None, end_address=None):
+def pcode2c(filename, langid, start_address=None, file_offset=None, size=None):
     output = []
     with open(filename, "rb") as file:
-        elffile = ELFFile(file)
-
-        # Get the symbol table
-        # if args.function is not None:
-        #    symtab = elffile.get_section_by_name(".symtab")
-        # Search for the function in the symbol table
-        #    for symbol in symtab.iter_symbols():
-        #        if symbol.name == args.function:
-        #            fun_addr = symbol["st_value"]
-        e_type = elffile.header["e_type"]
-        if e_type == "ET_EXEC" or e_type == "ET_DYN":
-            for segment in elffile.iter_segments():
-                if segment["p_flags"] & 0x1:  # PF_X flag is 1
-                    offset = segment["p_offset"]
-                    base = segment["p_vaddr"]
-                    size = segment["p_memsz"]
-                    break
-        else:
-            raise ValueError("Unknown ELF type")
-        if size == 0:
-            raise ValueError("No code found")
-        """
-        elif e_type == "ET_DYN":
-            # Iterate over sections and find the .text section
-            for section in elffile.iter_sections():
-                if section.name == ".text":
-                    offset = section.header["sh_offset"]
-                    size = section.header["sh_size"]
-                    base = 0
-                    break
-        """
-
-        if start_address is not None and end_address is not None:
-            read_offset = start_address - base + offset
-            read_size = min(end_address - start_address, size)
-            base = start_address
-        else:
-            read_offset = offset
-            read_size = size
-
-        if read_offset < 0 or read_offset > offset + size:
-            print(size)
-            print(read_offset)
-            print(hex(end_address))
-            print(hex(start_address))
-            print(hex(base))
-            if 0x00100000 <= start_address:
-                raise ValueError(
-                    "Bad start address (try removing Ghidra 0x00100000 offset)",
-                    hex(start_address),
-                )
-            raise ValueError("Bad start address", hex(start_address))
-        file.seek(read_offset)
-        code = file.read(read_size)
+        file.seek(file_offset)
+        code = file.read(size)
 
     ctx = Context(langid)
 
-    dx = ctx.disassemble(code, base_address=base)
+    dx = ctx.disassemble(code, base_address=start_address)
     insns = {insn.addr.offset: insn for insn in dx.instructions}
     # print(fmt_arch_header(ctx))
-    res = ctx.translate(code, base_address=base)
+    res = ctx.translate(code, base_address=start_address)
     output.append(header)
     for op in res.ops:
         if op.opcode == pypcode.OpCode.IMARK:
