@@ -1,5 +1,14 @@
 Ok...
+Try many examples
+storage of stuff in editor window
+
+C diffing
+
 Harness in compile like window. Call cbmc.
+Could auto fill in decompiled code for a comparative translatin validation.
+Could help fill out abi.
+Put all buttons, options in single pane
+Could copy assembly out in ghidra assmbler. (involves buldings an assembly parsr whch culd be useful.)
 
 libvmi - <https://libvmi.com/>
 gogle rekall <https://github.com/google/rekall>

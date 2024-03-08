@@ -21,6 +21,7 @@ import random
 # from cbmc import CBMC
 
 import os
+import pcode2c_util
 
 script_path = __file__  # str(getScriptSourceFile().getAbsolutePath())
 script_dir = os.path.dirname(script_path)  # File(script_path).get_Parent()
@@ -85,7 +86,8 @@ def main():
                 )
             startIndex += len(line) + 1
 
-    callback("whatev")
+    # callback("whatev")
+    pcode2c_util.C_syntax_highlight(doc)
     # doc.addDocumentListener(callback)
     frame.add(button, BorderLayout.SOUTH)
 
@@ -128,7 +130,6 @@ def run_pcode2c():
     values.defineFile("Bin File", java.io.File(filename))  # get current file
     values.defineAddress("Start Address", startAddress, currentProgram)
     values.defineInt("File Offset", file_offset)
-    # values.defineAddress("End Address", endAddress, currentProgram)
     values.defineInt("Size", size)
     # values.defineFile(
     #    "Out File", java.io.File(filename + ".pcode2c." + funcname + ".c")

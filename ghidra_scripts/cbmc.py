@@ -4,6 +4,17 @@
 
 import subprocess
 
+from ghidra.app.decompiler import DecompInterface
+
+
+def getCCode():
+    decomp = DecompInterface()
+    decomp.openProgram(currentProgram)
+    func = getFunctionContaining(currentAddress)
+    res = decomp.decompileFunction(func, 0, None)
+    ccode = res.getDecompiledFunction().getC()
+    return ccode
+
 
 def run_cbmc():
     values = ghidra.features.base.values.GhidraValuesMap()
@@ -21,18 +32,6 @@ def run_cbmc():
     values.defineString("Function", getFunctionContaining(currentAddress).getName())
 
     values = askValues("Model Check C File with CBMC", None, values)
-
-    def getCCode():
-        from ghidra.app.decompiler import DecompInterface
-
-        decomp = DecompInterface()
-        decomp.openProgram(currentProgram)
-        func = getFunctionContaining(currentAddress)
-        print(currentAddress)
-        print(func)
-        res = decomp.decompileFunction(func, 0, None)
-        ccode = res.getDecompiledFunction().getC()
-        return ccode
 
     cfile = values.getFile("C File (default is decompiler)")
     if cfile == None:

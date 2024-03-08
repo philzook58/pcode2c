@@ -8,7 +8,6 @@ from ghidra.features.base.values import GhidraValuesMap
 
 def run_pcode2c():
     func = getFunctionContaining(currentAddress)
-    funcname = func.getName()
 
     startAddress = func.getEntryPoint()
 

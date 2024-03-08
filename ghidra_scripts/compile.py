@@ -2,30 +2,18 @@
 # @toolbar C_Logo.png
 # @menupath Pcode2C.compile
 
-# values = ghidra.features.base.values.GhidraValuesMap()
-
-# askValues
-# in_args = askString("Enter register args", "Args")
-# out_args = askString("Enter out register args", "Args")
-
 from javax.swing import (
-    BorderFactory,
-    Box,
-    BoxLayout,
     JButton,
-    JLabel,
     JPanel,
     JScrollPane,
-    JTextArea,
-    JTextField,
     JFrame,
     JTextPane,
 )
-from java.awt import BorderLayout, Component, Dimension
-from java.awt.event import ActionListener
+from java.awt import BorderLayout, Dimension
 import subprocess
+import pcode2c_util
 
-template = """\
+old_template = """\
 #include <stdint.h>
 #define WRITEREG(name) asm( "" ::"r"(name));
 uint64_t CALLBACK({args}); 
@@ -49,6 +37,19 @@ uint64_t __attribute__((naked)) PATCHCODE({args}){{
 // Put Help here.
 """
 
+template = """\
+#include <stdint.h>
+uint64_t __attribute__((preserve_none)) CALLBACK({args}); 
+uint64_t __attribute__((preserve_none)) PATCHCODE({args}){{
+  
+  // **** PATCH CODE HERE ****
+  
+  // replace clobberable registers with `junk`
+  uint64_t junk;
+  return CALLBACK({params});
+}}
+"""
+
 # could generate this from ghidra?
 # can I use GHC abi?
 # should I unmacroize and just give comment examples?
@@ -56,19 +57,19 @@ uint64_t __attribute__((naked)) PATCHCODE({args}){{
 # lookup patcherex compiler data. Or maybe just reuse it.
 compiler_data = {
     "x86/little/64/default": {
-        "cc": "x86_64-linux-gnu-gcc",
-        "args": "uint64_t rdi, uint64_t rsi, uint64_t rdx, uint64_t rcx, uint64_t r8, uint64_t r9",
-        "options": "-Os -masm=intel -fverbose-asm",
-        "params": "rdi, rsi, rdx, rcx, r8, r9",
+        "cc": "clang-19",  # x86_64-linux-gnu-gcc",
+        "args": "uint64_t rdi, uint64_t rsi, uint64_t rdx, uint64_t rcx, uint64_t r8, uint64_t r9, uint64_t r11, uint64_t r12, uint64_t r13, uint64_t r14, uint64_t r15, uint64_t rax",
+        "options": "-Os -masm=intel ",  # -fverbose-asm
+        "params": "rdi, rsi, rdx, rcx, r8, r9, r11, r12, r13, r14, r15, rax",
     },
+}
+"""
     "ARM/little/32/v8": {
         "cc": "arm-linux-gnueabi-gcc",
         "args": "uint32_t r0, uint32_t r1, uint32_t r2, uint32_t r3",
         "options": "-Os -fverbose-asm -mlittle-endian -march=armv8-a",  # is this even right?
         "params": "r0, r1, r2, r3",
     },
-}
-"""
     "powerpc": {
         "cc": "powerpc-linux-gnu-gcc",
         "args": "uint64_t r3, uint64_t r4, uint64_t r5, uint64_t r6, uint64_t r7, uint64_t r8",
@@ -98,14 +99,6 @@ def run_compiler(code):
                     compiler=values.getString("Compiler"),
                     options=values.getString("Options"),
                 )
-                # "gcc",
-                # "-Os",
-                # "-S",
-                # "-fverbose-asm",
-                # "-c",
-                # "-o",
-                # "/tmp/patch_code.s",
-                # "/tmp/patch_code.c",
             ],
             stderr=subprocess.STDOUT,
             shell=True,
@@ -144,6 +137,8 @@ def main():
     patches_textarea.setEditable(True)
     scrollPane = JScrollPane(patches_textarea)
     code_panel.add(scrollPane, BorderLayout.CENTER)
+    doc = patches_textarea.getStyledDocument()
+    pcode2c_util.C_syntax_highlight(doc)
 
     frame.add(code_panel)
 
