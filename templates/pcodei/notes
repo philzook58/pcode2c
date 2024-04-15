@@ -1,0 +1,10 @@
+A pcode interpeter. 
+
+Packaging up the lifter is it's own pain. take from pycpcode?
+
+Mmapping in may be nice
+
+lift insn every time? sure.
+
+
+

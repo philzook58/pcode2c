@@ -21,7 +21,5 @@ int main() {
   __CPROVER_printf("RAX: %ld\n", *(uint64_t *)(state.reg + RAX));
   assert(*(uint8_t *)(state.reg + RAX) != 0);
 
-  // Check assertions here: ex, assert(*(uint64_t*)(state.reg + RAX) ==
-  // 0xdeadbeef);
   return 0;
 }
