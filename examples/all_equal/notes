@@ -1,0 +1,1 @@
+ ~/Documents/solvers/cbmc/build/bin/cbmc harness.c --unwind 3 --unwinding-assertions --no-standard-checks --object-bits 10  --trace | grep --no-group-separator '^PCODE2C' > trace

@@ -1,0 +1,113 @@
+PCODE2C	R0: 0	
+PCODE2C	R1: 0	
+PCODE2C	R2: 0	
+PCODE2C	R3: 0	
+PCODE2C	R4: 0	
+PCODE2C	R5: 0	
+PCODE2C	R6: 0	
+PCODE2C	R7: 0	
+PCODE2C	R8: 0	
+PCODE2C	R9: 0	
+PCODE2C	R10: 0	
+PCODE2C
+PCODE2C0x4457: 0x1169: ENDBR64 
+PCODE2C	R0: 0	
+PCODE2C	R1: 0	
+PCODE2C	R2: 0	
+PCODE2C	R3: 0	
+PCODE2C	R4: 0	
+PCODE2C	R5: 0	
+PCODE2C	R6: 0	
+PCODE2C	R7: 0	
+PCODE2C	R8: 0	
+PCODE2C	R9: 0	
+PCODE2C	R10: 0	
+PCODE2C
+PCODE2C0x4461: 0x116d: MOV EAX,0x0
+PCODE2C	COPY: (format-constant failed: typecast) 8 (format-constant failed: typecast) 8
+PCODE2C	R0: 0	
+PCODE2C	R1: 0	
+PCODE2C	R2: 0	
+PCODE2C	R3: 0	
+PCODE2C	R4: 0	
+PCODE2C	R5: 0	
+PCODE2C	R6: 0	
+PCODE2C	R7: 0	
+PCODE2C	R8: 0	
+PCODE2C	R9: 0	
+PCODE2C	R10: 0	
+PCODE2C
+PCODE2C0x4466: 0x1172: JMP 0x1177
+PCODE2C	BRANCH: 0x1177ul 8
+PCODE2C	R0: 0	
+PCODE2C	R1: 0	
+PCODE2C	R2: 0	
+PCODE2C	R3: 0	
+PCODE2C	R4: 0	
+PCODE2C	R5: 0	
+PCODE2C	R6: 0	
+PCODE2C	R7: 0	
+PCODE2C	R8: 0	
+PCODE2C	R9: 0	
+PCODE2C	R10: 0	
+PCODE2C
+PCODE2C0x4471: 0x1177: CMP EAX,EDI
+PCODE2C	INT_LESS: (format-constant failed: typecast) 1 (format-constant failed: typecast) 4 (format-constant failed: typecast) 4
+PCODE2C	INT_SBORROW: (format-constant failed: typecast) 1 (format-constant failed: typecast) 4 (format-constant failed: typecast) 4
+PCODE2C	INT_SUB: (format-constant failed: typecast) 4 (format-constant failed: typecast) 4 (format-constant failed: typecast) 4
+PCODE2C	INT_SLESS: (format-constant failed: typecast) 1 (format-constant failed: typecast) 4 (format-constant failed: typecast) 4
+PCODE2C	INT_EQUAL: (format-constant failed: typecast) 1 (format-constant failed: typecast) 4 (format-constant failed: typecast) 4
+PCODE2C	INT_AND: (format-constant failed: typecast) 4 (format-constant failed: typecast) 4 (format-constant failed: typecast) 4
+PCODE2C	POPCOUNT: (format-constant failed: typecast) 1 (format-constant failed: typecast) 4
+PCODE2C	INT_AND: (format-constant failed: typecast) 1 (format-constant failed: typecast) 1 (format-constant failed: typecast) 1
+PCODE2C	INT_EQUAL: (format-constant failed: typecast) 1 (format-constant failed: typecast) 1 (format-constant failed: typecast) 1
+PCODE2C	R0: 0	
+PCODE2C	R1: 0	
+PCODE2C	R2: 0	
+PCODE2C	R3: 0	
+PCODE2C	R4: 0	
+PCODE2C	R5: 0	
+PCODE2C	R6: 0	
+PCODE2C	R7: 0	
+PCODE2C	R8: 0	
+PCODE2C	R9: 0	
+PCODE2C	R10: 0	
+PCODE2C
+PCODE2C0x4473: 0x1179: JGE 0x118e
+PCODE2C	INT_EQUAL: (format-constant failed: typecast) 1 (format-constant failed: typecast) 1 (format-constant failed: typecast) 1
+PCODE2C branch cond  1 
+PCODE2C SF  0 
+PCODE2C OF  0 
+PCODE2C	CBRANCH_GOTO_TEMPFIX: 53120 1 0x118eul 8
+PCODE2CBRANCH TAKEN
+PCODE2C	R0: 0	
+PCODE2C	R1: 0	
+PCODE2C	R2: 0	
+PCODE2C	R3: 0	
+PCODE2C	R4: 0	
+PCODE2C	R5: 0	
+PCODE2C	R6: 0	
+PCODE2C	R7: 0	
+PCODE2C	R8: 0	
+PCODE2C	R9: 0	
+PCODE2C	R10: 0	
+PCODE2C
+PCODE2C0x4494: 0x118e: MOV EAX,0x1
+PCODE2C	COPY: (format-constant failed: typecast) 8 (format-constant failed: typecast) 8
+PCODE2C	R0: 1	
+PCODE2C	R1: 0	
+PCODE2C	R2: 0	
+PCODE2C	R3: 0	
+PCODE2C	R4: 0	
+PCODE2C	R5: 0	
+PCODE2C	R6: 0	
+PCODE2C	R7: 0	
+PCODE2C	R8: 0	
+PCODE2C	R9: 0	
+PCODE2C	R10: 0	
+PCODE2C
+PCODE2C0x4499: 0x1193: RET 
+PCODE2C	LOAD: (format-constant failed: typecast) 8 (format-constant failed: typecast) 8 (format-constant failed: typecast) 8
+PCODE2C	load address: 0
+PCODE2C	INT_ADD: (format-constant failed: typecast) 8 (format-constant failed: typecast) 8 (format-constant failed: typecast) 8
+PCODE2C	RETURN: (format-constant failed: typecast) 8
