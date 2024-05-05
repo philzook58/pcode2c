@@ -3,6 +3,9 @@ import tempfile
 
 
 def single(precond, postcond, equality=False):
+    """
+    main with a single pcode2c
+    """
     return f"""\
 int main(){{
     CPUState state;
@@ -14,6 +17,9 @@ int main(){{
 
 
 def comparative(precond, postcond, equality=False):
+    """
+    main with 2 pcode2c calls
+    """
     return f"""\
 int main(){{
     CPUState state_orig, state_mod;
@@ -29,14 +35,14 @@ def run_cbmc(filename, args):
 
 
 if __name__ == "__main__":
-    args = argparse.ArgumentParser(description="Run CBMC on a C file")
-    args.add_argument("filename")
-    args.add_argument("--precond", default="true")
-    args.add_argument("--postcond", default="true")
-    args.parse_args()
+    cl_args_parse = argparse.ArgumentParser(description="Run CBMC on a C file")
+    cl_args_parse.add_argument("filename")
+    cl_args_parse.add_argument("--precond", default="true")
+    cl_args_parse.add_argument("--postcond", default="true")
+    cl_args_parse.parse_args()
     with tempfile.NamedTemporaryFile() as f:
         standalone = pcode2c(filename)
         f.write(standalone.encode("utf-8"))
-        f.write(single_template(args.precond, args.postcond))
+        f.write(single_template(cl_args_parse.precond, cl_args_parse.postcond))
         f.flush()
-        run_cbmc(f.name, args.nargs)
+        run_cbmc(f.name, cl_args_parse.nargs)

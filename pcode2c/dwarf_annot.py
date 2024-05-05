@@ -1,3 +1,5 @@
+import os
+import sys
 import argparse
 from elftools.elf.elffile import ELFFile
 from elftools.dwarf.descriptions import (
@@ -5,8 +7,6 @@ from elftools.dwarf.descriptions import (
     set_global_machine_arch,
     describe_reg_name,
 )
-import os
-import sys
 
 
 # https://github.com/eliben/pyelftools/blob/8b97f5da6838791fd5c6b47b1623fb414daed2f0/scripts/dwarfdump.py#L136

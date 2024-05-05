@@ -1,7 +1,12 @@
+from typing import List
 import pypcode
 
+CCodeString = str
 
-def fmt_arch_header(langid):
+def fmt_arch_header(langid) -> List[CCodeString]:
+    """
+    list of macros from context
+    """
     ctx = Context(langid)
     output = []
     for reg, vnode in ctx.registers.items():
@@ -9,8 +14,10 @@ def fmt_arch_header(langid):
     return output
 
 
-def fmt_symbol_header(elf):
-    # Get the symbol table
+def fmt_symbol_header(elf) -> List[CCodeString]:
+    """
+    Get the symbol table
+    """
     output = []
     symtab = elffile.get_section_by_name(".symtab")
     for symbol in symtab.iter_symbols():
@@ -23,7 +30,10 @@ def fmt_symbol_header(elf):
 #    pcode2c_include = f.read()
 
 
-def is_branch(op: pypcode.OpCode):
+def is_branch(op: pypcode.OpCode) -> bool:
+    """
+    any sort of branching
+    """
     return op in (
         pypcode.OpCode.BRANCH,
         pypcode.OpCode.CBRANCH,
@@ -34,7 +44,7 @@ def is_branch(op: pypcode.OpCode):
     )
 
 
-def fmt_varnode(varnode: pypcode.Varnode):
+def fmt_varnode(varnode: pypcode.Varnode) -> CCodeString:
     if varnode.space.name == "const":
         return (
             "(uint8_t *)&(long unsigned int){"
@@ -50,7 +60,7 @@ def fmt_varnode(varnode: pypcode.Varnode):
     return f"{varnode.space.name}_space + {hex(varnode.offset)}ul{regname}, {varnode.size}ul"
 
 
-def fmt_varnode_separate_space(varnode: pypcode.Varnode):
+def fmt_varnode_separate_space(varnode: pypcode.Varnode) -> CCodeString:
     if varnode.space.name == "const":
         return (
             "0, (uint8_t *)&(long unsigned int){"
@@ -68,8 +78,10 @@ def fmt_varnode_separate_space(varnode: pypcode.Varnode):
 unique_pcode_insn_id = 0
 
 
-def fmt_branch_dest_varnode(varnode):
-    # Special case this generation to support realtive pcode jumps
+def fmt_branch_dest_varnode(varnode) -> CCodeString:
+    """
+    Special case this generation to support realtive pcode jumps
+    """
     if varnode.space.name == "const":
         return (
             "0, P_"
@@ -84,7 +96,7 @@ def fmt_branch_dest_varnode(varnode):
         raise ValueError(f"Bad branch dest space {varnode.space.name}")
 
 
-def fmt_insn(op: pypcode.PcodeOp):
+def fmt_insn(op: pypcode.PcodeOp) -> CCodeString:
     global unique_pcode_insn_id
     unique_pcode_insn_id += 1
     args = [fmt_varnode(op.output)] if op.output else []
@@ -123,8 +135,12 @@ footer = """\
 from pypcode import Context, PcodePrettyPrinter
 
 
-def pcode2c(filename, langid, start_address=None, file_offset=None, size=None):
-    output = []
+def pcode2c(filename, langid, start_address=None, file_offset=None, size=None) -> List[CCodeString]:
+    """
+    fill in the branches of the switch(state->pc) of header
+    still must join together
+    """
+    output : List[CCodeString] = []
     with open(filename, "rb") as file:
         file.seek(file_offset)
         code = file.read(size)
