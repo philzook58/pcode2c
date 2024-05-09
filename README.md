@@ -8,8 +8,9 @@ C is a useful intermediate because it enables using powerful off the shelf verif
 
 This enables soundly answering questions about the relationship between high level source and binary in a relatively easy manner that no other method I know of can do.
 
-An initial blog posts <https://www.philipzucker.com/pcode2c/>
-
+Blog posts:
+- <https://www.philipzucker.com/pcode2c/>
+- [DWARF Verification via Ghidra and CBMC](https://www.philipzucker.com/pcode2c-dwarf/
 ## Installation
 
 ```bash
