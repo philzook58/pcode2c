@@ -9,8 +9,10 @@ from elftools.dwarf.descriptions import (
 )
 
 
-# https://github.com/eliben/pyelftools/blob/8b97f5da6838791fd5c6b47b1623fb414daed2f0/scripts/dwarfdump.py#L136
-def get_full_file_path(die, dwarfinfo, cu):
+def get_full_file_path(die, dwarfinfo, cu) -> str:
+    """
+    https://github.com/eliben/pyelftools/blob/8b97f5da6838791fd5c6b47b1623fb414daed2f0/scripts/dwarfdump.py#L136
+    """
     line_program = dwarfinfo.line_program_for_CU(cu)
     file_entry = die.attributes.get("DW_AT_decl_file")
 
@@ -21,15 +23,16 @@ def get_full_file_path(die, dwarfinfo, cu):
         dir_name = dir_index.decode("utf-8") if dir_index else ""
         full_path = os.path.join(dir_name, file_name)
         return full_path
-    else:
-        return "Unknown"
+    return "Unknown"
 
 
 from elftools.dwarf.locationlists import LocationParser
 
 
-# process linetable
 def linetable(dwarfinfo):
+    """
+    process linetable
+    """
     for CU in dwarfinfo.iter_CUs():
         lineprogram = dwarfinfo.line_program_for_CU(CU)
         for entry in lineprogram.get_entries():
@@ -38,11 +41,13 @@ def linetable(dwarfinfo):
         return lineprogram
 
 
-# get AT_location info from dwarfinfo
 def locations_info(dwarfinfo):
+    """
+    get AT_location info from dwarfinfo
+    """
     llp = dwarfinfo.location_lists()
     locparser = LocationParser(llp)
-    vars = {}
+    my_vars = {}
     for CU in dwarfinfo.iter_CUs():
         for die in CU.iter_DIEs():
             if die.tag == "DW_TAG_variable":
@@ -52,8 +57,8 @@ def locations_info(dwarfinfo):
                         loc, CU.header.version, die=die
                     )
                     name = die.attributes["DW_AT_name"].value.decode("utf-8")
-                    vars[name] = myloc
-    return vars
+                    my_vars[name] = myloc
+    return my_vars
 
 
 def process_elf_file(filename):
@@ -101,12 +106,12 @@ def process_elf_file(filename):
     return die_info
 
 
-def die_var2C(var):
+def die_var2C(var) -> str:
     # {'line': 10, 'name': 'result', 'type': 'DW_TAG_variable', 'column': 9, 'low_pc': 'Unknown'}
     return f"""DW_TAG_VARIABLE("{var['name']}", {var['low_pc']});\n"""
 
 
-def die_label2C(label):
+def die_label2C(label) -> str:
     return f"""DW_TAG_LABEL("{label['name']}", {label['low_pc']});\n"""
 
 
@@ -122,23 +127,23 @@ if __name__ == "__main__":
     args = parser.parse_args()
     print(args.input)
     # print(args.output)
-    die_info = process_elf_file(args.input)
-    print(die_info)
-    for filename, dies in die_info.items():
-        print(filename)
+    main_die_info = process_elf_file(args.input)
+    print(main_die_info)
+    for main_filename, dies in main_die_info.items():
+        print(main_filename)
         # Sorting entries in reverse order of line number
         dies.sort(key=lambda x: x["line"], reverse=True)
-        with open(filename, "r") as f:
-            with sys.stdout if args.output == None else open(args.output, "w") as o:
-                lines = f.readlines()
-                for entry in dies:
-                    if entry["type"] == "DW_TAG_variable":
-                        comment = die_var2C(entry)
-                    elif entry["type"] == "DW_TAG_label":
-                        comment = die_label2C(entry)
+        with open(main_filename, "r") as main_f:
+            with sys.stdout if args.output is None else open(args.output, "w") as o:
+                lines = main_f.readlines()
+                for die_entry in dies:
+                    if die_entry["type"] == "DW_TAG_variable":
+                        comment = die_var2C(die_entry)
+                    elif die_entry["type"] == "DW_TAG_label":
+                        comment = die_label2C(die_entry)
                     else:
-                        comment = f"// {entry['type']} {entry['name']}\n"
-                    line_num = entry["line"]
+                        comment = f"// {die_entry['type']} {die_entry['name']}\n"
+                    line_num = die_entry["line"]
                     if line_num <= len(lines):
                         lines.insert(line_num - 1, comment)
                 o.writelines(lines)
