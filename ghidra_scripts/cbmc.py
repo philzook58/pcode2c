@@ -2,12 +2,13 @@
 # @toolbar cbmc.png
 # @menupath Pcode2C.cbmc
 
-import subprocess
-
 from ghidra.app.decompiler import DecompInterface
 
-
-def getCCode():
+def get_c_code() -> str:
+    """
+    if cfile is not provided run_cbmc will use this instead
+    putting this content into a tmp file
+    """
     decomp = DecompInterface()
     decomp.openProgram(currentProgram)
     func = getFunctionContaining(currentAddress)
@@ -15,8 +16,10 @@ def getCCode():
     ccode = res.getDecompiledFunction().getC()
     return ccode
 
-
-def run_cbmc():
+def values_setup():
+    """
+    setup ghidra values map
+    """
     values = ghidra.features.base.values.GhidraValuesMap()
 
     values.defineFile("C File (default is decompiler)", java.io.File(""))
@@ -32,10 +35,15 @@ def run_cbmc():
     values.defineString("Function", getFunctionContaining(currentAddress).getName())
 
     values = askValues("Model Check C File with CBMC", None, values)
+    return values
 
+def get_c_file(values) -> str:
+    """
+    either get the C file from values or from get_c_code
+    """
     cfile = values.getFile("C File (default is decompiler)")
-    if cfile == None:
-        ccode = getCCode()
+    if cfile is None:
+        ccode = get_c_code()
         print("Writing decompiled code to /tmp/decomp.c:")
         print(ccode)
         filename = "/tmp/decomp.c"
@@ -44,6 +52,16 @@ def run_cbmc():
         cfile = filename
     else:
         cfile = str(cfile)
+
+    return cfile
+
+def run_cbmc() -> None:
+    """
+    run cbmc with arguments specified by values_setup and get_c_file
+    """
+    values = values_setup()
+
+    cfile = get_c_file(values)
 
     # TODO get arch, get bits, get endianess
     command = [

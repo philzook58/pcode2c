@@ -1,5 +1,5 @@
-from pypcode import Context, PcodePrettyPrinter
 import argparse
+from pypcode import Context, PcodePrettyPrinter
 
 
 from .printer import *

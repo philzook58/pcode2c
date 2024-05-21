@@ -4,7 +4,10 @@ from elftools.elf.elffile import ELFFile
 
 
 # Also consider looking here https://docs.pwntools.com/en/stable/asm.html
-def asm(code):
+def asm(code) -> bytes:
+    """
+    put this code into a temporary file, gcc and provide the contents of the resulting .out file
+    """
     with tempfile.NamedTemporaryFile(suffix=".s") as f:
         f.write(code.encode("utf-8"))
         f.flush()
